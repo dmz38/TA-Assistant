@@ -1,0 +1,76 @@
+<html>
+<head>
+    <script src="js/jquery-2.2.2.min.js"></script>
+</head>
+<body>
+<input type="file" id="fileTest">
+<script>
+    //alert("Hello!");
+$().ready(function() {
+    $("#fileTest").change(function() {
+        $.ajax({
+            type: "GET",
+            url: "gradesCom.csv",
+            dataType: "text",
+            success: function (data) {
+                processData(data);
+            }
+        });
+    });
+});
+
+function processData(allText) {
+    var allTextLines = allText.split(/\r\n|\n/);
+    var headers = allTextLines[0].split(',');
+    var lines = [];
+    //alert("here!");
+    for (var i=1; i<allTextLines.length; i++) {
+        var data = allTextLines[i].split(',');
+        if (data.length == headers.length) {
+            /*
+            var tarr = [];
+            for (var j = 0; j < headers.length; j++) {
+                tarr.push(headers[j])
+                tarr.push(data[j]);
+            }
+            lines.push(tarr);
+            */
+            var item = "";
+            var row = [];
+            for (var g = 0; g < 4; g++) {
+                row.push(data[g]);
+            }
+
+            lines.push(row);
+        }
+    }
+    var item = "", part = "";
+
+    for (item in headers) {
+        document.write(headers[item] + "&nbsp&nbsp&nbsp&nbsp&nbsp")
+    }
+
+    document.write("<br><br>");
+
+    for(item in lines) {
+        //document.write(item + " - " + part + ": ");
+        for(part in lines[item]) {
+             document.write(lines[item][part] + ", ");
+        }
+        document.write("<br>");
+    }
+
+
+    /*
+    for(item in lines) {
+        for (part in lines[item]) {
+            document.write(item + " - " + part + ": " + lines[item][part] + "<br>");
+        }
+    }
+    //document.write(lines);
+    //alert(lines);
+    */
+}
+</script>
+</body>
+</html>
