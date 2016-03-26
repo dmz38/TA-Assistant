@@ -293,6 +293,29 @@
 							<div class="form-group main-menu col-xs-10">
 								<!--<label for="ddCreatedRubrics" class="control-label">Select a rubric</label>-->
 								<div class="input-group">
+									<select class="form-control text-center" id="classSearch" aria-describedby="ddc">
+										<option>Select a class...</option>
+										<option>CS164</option>
+										<option>CS171</option>
+										<option>CS172</option>
+										<option>CS175</option>
+										<option>CS260</option>
+										<option>CS265</option>
+										<option>CS270</option>
+										<option>CS275</option>
+										<option>CS281</option>
+										<option>CS283</option>
+										<option>CS338</option>
+										<option>CS350</option>
+										<option>CS360</option>
+										<option>CS361</option>
+										<option>CS380</option>
+										<option>CS451</option>
+										<option>CS457</option>
+									</select>
+									<span class="input-group-addon" id="ddc"><span class="caret"></span></span>
+								</div><br>
+								<div class="input-group">
 									<select id="ddCreatedRubrics" class="form-control" aria-describedby="daa">
 										<option>Select a rubric...</option>
 									</select>
@@ -335,6 +358,28 @@
 						<div class="form-group label-floating">
 							<label for="newRubricName" class="control-label">Rubric Name</label>
 							<input type="text" class="form-control" id="newRubricName">
+						</div>
+						<div class="form-group">
+							<label for="classID" class="control-label">Class</label>
+							<select class="form-control" id="classID">
+								<option>CS164</option>
+								<option>CS171</option>
+								<option>CS172</option>
+								<option>CS175</option>
+								<option>CS260</option>
+								<option>CS265</option>
+								<option>CS270</option>
+								<option>CS275</option>
+								<option>CS281</option>
+								<option>CS283</option>
+								<option>CS338</option>
+								<option>CS350</option>
+								<option>CS360</option>
+								<option>CS361</option>
+								<option>CS380</option>
+								<option>CS451</option>
+								<option>CS457</option>
+							</select>
 						</div>
 					</form>
 				</div>
@@ -538,6 +583,48 @@
 			</div><!--
 			--><div class="col-xs-5 col-md-6 col-lg-6 vcenter">
 				<textarea rows="4" class="form-control taComments" placeholder="Comments"></textarea>
+			</div>
+		</div>
+	</div>
+</template>
+
+<template id="generalRow">
+	<div>
+		<div class="row general">
+			<div class="col-xs-2 vcenter">
+				<strong><span class="catTitle">General Comments</span></strong><br>
+			</div><!--
+			--><div class="col-xs-3 col-md-2 col-lg-3 vcenter">
+			<strong>Notes:</strong>
+			<br><span class="graderNotes">For errors not covered by other categories</span>
+		</div><!--
+			--><div class="col-xs-2 col-lg-1 vcenter">
+			<input type="text" id="generalPoints" class="form-control assignedPoints text-center" placeholder="Points">
+		</div><!--
+			--><div class="col-xs-5 col-md-6 col-lg-6 vcenter">
+			<textarea id="generalComment" rows="4" class="form-control taComments" placeholder="Comments"></textarea>
+		</div>
+		</div>
+	</div>
+</template>
+
+<template id="latePenalty">
+	<div>
+		<div class="row">
+			<div class="col-xs-2 vcenter">
+				<strong><span class="catTitle">Lateness</span></strong><br>
+			</div><!--
+			--><div class="col-xs-3 col-md-2 col-lg-3 vcenter">
+			<strong>Notes:</strong>
+			<br><span class="graderNotes">For late penalties</span>
+			</div><!--
+			--><div class="col-xs-2 col-lg-1 vcenter">
+					<div class="form-horizontal checkbox text-center">
+						<label><input type="checkbox" id="latePoints" data-penalty="18"></label>
+					</div>
+			</div><!--
+			--><div class="col-xs-5 col-md-6 col-lg-6 vcenter">
+				<textarea id="lateComment" rows="4" class="form-control taComments" placeholder="Comments"></textarea>
 			</div>
 		</div>
 	</div>

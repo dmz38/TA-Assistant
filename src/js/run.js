@@ -1,20 +1,3 @@
-(function(){
-
-    var _z = console;
-    Object.defineProperty( window, "console", {
-        get : function(){
-            if( _z._commandLineAPI ){
-                throw "For your protection, running scripts via the console is forbidden!";
-            }
-            return _z;
-        },
-        set : function(val){
-            _z = val;
-        }
-    });
-
-})();
-//tinymce.init({ selector:'textarea.wsy' });
 $.material.init();
 $("#fabCreateCat").hide();
 $("#loginError").hide();
@@ -33,7 +16,9 @@ var arrayOfNotes = new Array();
 var arrayOfCommentsText = new Array();
 var rubricName = "";
 var maxPoints = 0;
+var generalPoints = 0;
 var key = null;
+var rubricClass = "";
 
 var taName = ""; //= "Dan Ziegler";
 var taEmail = ""; //= "dmz38@drexel.edu";
@@ -69,9 +54,9 @@ function setCookie(cname, cvalue, exdays) {
     d.setTime(d.getTime() + (exdays*24*60*60*1000));
     var expires = "expires="+d.toUTCString();
     var cValue = cname + "=" + cvalue + "; " + expires;
-    console.log(cValue);
+    //console.log(cValue);
     document.cookie = cValue;
-    console.log(document.cookie);
+    //console.log(document.cookie);
 }
 
 //$("#totalCalcPts").html(totalScore);
@@ -86,6 +71,10 @@ function generateComments() {
             arrayOfScores[index] = 0;
         }
     });
+    if ($("#latePoints").is(":checked")) {
+        console.log("Pts");
+        totalScore = totalScore - parseFloat($("#latePoints").attr("data-penalty"));
+    }
     maxPoints = 0;
     for(var i in arrayOfMaxPoints) {
         maxPoints += parseFloat(arrayOfMaxPoints[i]);
@@ -114,6 +103,21 @@ function generateComments() {
         }
         //commentString = commentString + "<br>";
     });
+    if ($("#generalComment").val() != "") {
+        var points = "";
+        if ($("#generalPoints").val() != "" && $("#generalPoints").val() != 0) {
+            points = ($("#generalPoints").val() > 0) ? "(+" + $("#generalPoints").val() + ")" : "(" + $("#generalPoints").val() + ")";
+        }
+        commentString = commentString + "<br>" + points + " " + $("#generalComment").val() + "<br>";
+        commentStringText = commentStringText + "\n" + points + " " + $("#generalComment").val() + "\n";
+    }
+
+    if ($("#latePoints").is(":checked")) {
+        console.log("Yeah");
+        commentString = commentString + "<br>" + "(-" + $("#latePoints").data("penalty") + ") - Late Penalty. " + $("#lateComment").val() + "<br>";
+        commentStringText = commentStringText + "\n" + "(-" + $("#latePoints").data("penalty") + ")" + " " + $("#lateComment").val() + "\n";
+    }
+
     commentString = commentString + "<br>Total Score: " + totalScore + "/" + maxPoints + "<br><br>";
     commentStringText = commentStringText + "\nTotal Score: " + totalScore + "/" + maxPoints + "\n\n";
     commentString = commentString + "Graded by " + taName + " (" + taEmail + ").<br>" + taMessage;
@@ -126,6 +130,10 @@ $('#btnCreate').click(function(){
     $('#first-load-dialog').modal('hide');
     $("#create-new-rubric-dialog").modal('show');
     key = null;
+});
+
+$("#latePoints").on("click", function() {
+    generateComments();
 });
 
 $("#btnRubricCreateCancel").click(function () {
@@ -160,6 +168,7 @@ $("#btnAll100").click(function() {
         $(this).parent().removeClass("has-warning");
         $(this).parent().next().hide();
     });
+    $("#latePoints").attr("checked", false);
     generateComments();
 });
 
@@ -276,6 +285,7 @@ $("#saveTAInfo").click(function() {
 $("#btnClearComments").click(function() {
     $(".assignedPoints").val("");
     $(".taComments").val("");
+    $("#latePoints").attr("checked", false);
     generateComments();
 });
 
@@ -283,6 +293,7 @@ $("#btnRubricCreate").click(function () {
     $('#first-load-dialog').modal("hide");
     $("#fabCreateCat").show();
     rubricName = $("#newRubricName").val();
+    rubricClass = $("#classID option:selected").text();
     $("#create-new-category-dialog").modal("show");
 });
 
@@ -304,10 +315,20 @@ function generateCategories() {
         $(".graderNotes", $template).html(arrayOfNotes[index]);
         $("#categoryArea").append($template.html());
     });
+    var template = $("#generalRow").html();
+    $template = $(template);
+    $("#categoryArea").append($template.html());
+    var template = $("#latePenalty").html();
+    $template = $(template);
+    $("#categoryArea").append($template.html());
     $("#rubricNameTitle").html(rubricName);
     $.material.init();
     $(".overPts").hide();
     $("#main-area").removeClass("hidden");
+
+    $("#latePoints").on("click", function() {
+        generateComments();
+    });
 }
 
 function generateCategoriesEdit() {
@@ -324,11 +345,25 @@ function generateCategoriesEdit() {
         $(".btnCatCpy", $template).attr("data-index", index);
         $("#categoryArea").append($template.html());
     });
+    var template = $("#generalRow").html();
+    $template = $(template);
+    $("#categoryArea").append($template.html());
+    var template = $("#latePenalty").html();
+    $template = $(template);
+    $("#categoryArea").append($template.html());
     $("#rubricNameTitle").html(rubricName);
     $.material.init();
     $('[data-toggle="tooltip"]').tooltip();
     $("#main-area").removeClass("hidden");
 }
+
+$("#classSearch").on("change", function () {
+    console.log('stuff');
+    if($(this).selectedIndex != 1) {
+        console.log($("#classSearch option:selected").text());
+        getRubricsOnline($("#classSearch option:selected").text());
+    }
+});
 
 $("#btnCreateCat").click(function () {
     arrayOfCategories.push($("#newCatName").val());
@@ -348,12 +383,12 @@ $("#btnCancelCat").click(function () {
 
 var ws = null;
 /*
-new cloudmine.WebService({
-    appid: '16855e52dba049e5b04d22e9b4f6104f',
-    apikey: 'c17f1497b955442b8bf77dfa5164dbb6'
-    //session_token: (window.localStorage ? localStorage.getItem('cm_session') : null)
-});
-*/
+ new cloudmine.WebService({
+ appid: '16855e52dba049e5b04d22e9b4f6104f',
+ apikey: 'c17f1497b955442b8bf77dfa5164dbb6'
+ //session_token: (window.localStorage ? localStorage.getItem('cm_session') : null)
+ });
+ */
 
 var ws2 = null;
 var appID1 = '';
@@ -397,7 +432,7 @@ function generateAvailableRubrics() {
 
 function getRubricsOnline() {
     ws.search('[type = "rubric"]', {sort: 'name'}, {applevel: false}).on('success', function(data, response) {
-        console.log(data);
+        //console.log(data);
         namesOfRubrics = new Array();
         arrayOfCreatedRubrics = new Array();
         for(var id in data) {
@@ -416,7 +451,56 @@ function getRubricsOnline() {
                     }
                     currentValues.push(cats);
                     //console.log(cats);
-                } /*else {
+                } else if(nId == "class") {
+                    rubricClass = obj["class"];
+                    console.log(rubricClass);
+                }
+
+
+
+                /*else {
+                 //console.log("SHOULD BE RUBRIC -> " + nId + ":" + obj[nId]);
+                 }*/
+
+            }
+            arrayOfCreatedRubrics.push(currentValues);
+        }
+        //console.log(arrayOfCreatedRubrics);
+        //console.log(namesOfRubrics);
+        //console.log(id);
+        generateAvailableRubrics();
+    });
+}
+
+function getRubricsOnline(searchTerm) {
+    ws.search('[type = "rubric", class = "' + searchTerm + '"]', {sort: 'name'}, {applevel: false}).on('success', function(data, response) {
+        //console.log(data);
+        namesOfRubrics = new Array();
+        arrayOfCreatedRubrics = new Array();
+        for(var id in data) {
+            keysOfObjects.push(id);
+            var obj = data[id];
+            //console.log(obj);
+            var currentValues = new Array();
+            for (var nId in obj) {
+                if(nId == "name") {
+                    //console.log("SHOULD BE NAME -> " + obj["name"]);
+                    namesOfRubrics.push(obj["name"]);
+                } else if (nId == "categories") {
+                    var cats = new Array();
+                    for(var ctg = 0; ctg < obj["categories"].length; ctg++) {//  in obj["categories"]) {
+                        cats.push(obj["categories"][ctg]);
+                    }
+                    currentValues.push(cats);
+                    //console.log(cats);
+                } else if(nId == "class") {
+                    rubricClass = obj["class"];
+                    console.log(rubricClass);
+                }
+
+
+
+                /*else {
                  //console.log("SHOULD BE RUBRIC -> " + nId + ":" + obj[nId]);
                  }*/
 
@@ -540,7 +624,7 @@ $(".row").on("click", ".btnCatCpy", function() {
 });
 
 $("#copyBelow").click(function() {
-    console.log(rowToCpy);
+    //console.log(rowToCpy);
     arrayOfScores.splice(rowToCpy, 0, arrayOfScores[rowToCpy]);
     arrayOfMaxPoints.splice(rowToCpy, 0, arrayOfMaxPoints[rowToCpy]);
     arrayOfCategories.splice(rowToCpy, 0, arrayOfCategories[rowToCpy]);
@@ -596,14 +680,15 @@ function saveRubric() {
         genCatArray.push(tempArray);
     }
 
-    console.log("Key: " + key);
+    //console.log("Key: " + key);
 
     ws.set(key, {
         type : "rubric",
         name : rubricName,
-        categories : genCatArray
+        categories : genCatArray,
+        class : rubricClass
     }).on('success', function(data, apicall) {
-        console.log(data);
+        //console.log(data);
         for(var k in data) {
             key = k;
         }
@@ -636,12 +721,12 @@ $("#processLogin").click(function() {
                     //session_token: (window.localStorage ? localStorage.getItem('cm_session') : null)
                 });
                 $("#loginError").hide();
-                console.log(data);
+                //console.log(data);
                 $("#login-to-taa").hide();
                 $("#first-load-dialog").modal("show");
                 // Now you can save the session token using localStorage
                 //localStorage.setItem('cm_session', response.session_token);
-                getRubricsOnline();
+                //getRubricsOnline();
             }
         });
     }).on('error', function (data, response) {
